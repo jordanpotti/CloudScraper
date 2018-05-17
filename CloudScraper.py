@@ -91,7 +91,11 @@ def main():
                     start(line_mod.rstrip(), arguments.depth)
                 else:
                     start(line, arguments.depth)
-    else:
-        start(arguments.URL, arguments.depth)
+    else:                
+        if 'http' not in line:
+            line_mod = "https://"+line
+            start(line_mod.rstrip(), arguments.depth)
+        else:
+            start(arguments.URL, arguments.depth)
 print_banner()
 main()
