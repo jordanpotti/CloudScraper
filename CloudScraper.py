@@ -92,8 +92,8 @@ def main():
                 else:
                     start(line, arguments.depth)
     else:                
-        if 'http' not in line:
-            line_mod = "https://"+line
+        if 'http' not in arguments.URL:
+            line_mod = "https://"+arguments.URL
             start(line_mod.rstrip(), arguments.depth)
         else:
             start(arguments.URL, arguments.depth)
