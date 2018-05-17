@@ -34,3 +34,7 @@ This tool was inspired by a recent talk by [Bryce Kunz](https://twitter.com/Twee
 ## Various:
 
 To add keywords, simply add to the list in the parser function. 
+
+## Why:
+
+So Bryce Kunz actually made a tool to do something similar but it used scrapy and I wanted to build something myself that didn't depend on Python2 or any scraping modules such as scrapy or BeautifulSoup. Hence, CloudScraper was born. The benefit of using raw regex's instead of parsing for href links, is that many times, these are not included in href links, they can be buried in JS or other various locations. CloudScraper grabs the entire page and uses a regex to look for links. This also has its flaws such as grabbing too much or too little but at least we know we are covering our bases :) 
