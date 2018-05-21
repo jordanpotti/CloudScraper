@@ -2,7 +2,7 @@ import requests
 import re
 from argparse import ArgumentParser
 import sys
-
+from bs4 import BeautifulSoup
 
 grep_list = None
 
@@ -29,6 +29,16 @@ def start(target, depth):
             except requests.exceptions.RequestException as e:
                 print(e)
     links = []
+    soup = BeautifulSoup(start_page.text, "lxml")
+    for link in soup.findAll('a', attrs={'href':re.compile("^http://")}):
+        links.append(link.get('href'))
+    for link in soup.findAll('a', attrs={'href':re.compile("^https://")}): 
+        links.append(link.get('href'))
+    for link in soup.findAll('link', attrs={'href':re.compile("^http://")}): 
+        links.append(link.get('href'))
+    for link in soup.findAll('link', attrs={'href':re.compile("^https://")}): 
+        links.append(link.get('href'))
+
     urls = re.findall('http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\(\), ]|(?:%[0-9a-fA-F][0-9a-fA-F]))+',start_page.text)
     links.extend(urls)
     spider(links,target,depth)
@@ -40,10 +50,28 @@ def spider(links,target,depth):
         if (target_clean_2 in url) and url.count("/") < depth+2:
             try:
                 page = requests.get(url, allow_redirects=True, headers=headers)
+                soup = BeautifulSoup(page.text, "lxml")
+                for link in soup.findAll('a', attrs={'href':re.compile("^http://")}):
+                    links.append(link.get('href'))
+                for link in soup.findAll('a', attrs={'href':re.compile("^https://")}): 
+                    links.append(link.get('href'))
+                for link in soup.findAll('link', attrs={'href':re.compile("^http://")}): 
+                    links.append(link.get('href'))
+                for link in soup.findAll('link', attrs={'href':re.compile("^https://")}): 
+                    links.append(link.get('href'))
             except requests.exceptions.RequestException as e:  # This is the correct syntax
                 if 'https' in target: 
                     try:
                         page = requests.get(target.replace('https','http'),allow_redirects=True,headers=headers)
+                        soup = BeautifulSoup(page.text, "lxml")
+                        for link in soup.findAll('a', attrs={'href':re.compile("^http://")}):
+                            links.append(link.get('href'))
+                        for link in soup.findAll('a', attrs={'href':re.compile("^https://")}): 
+                            links.append(link.get('href'))
+                        for link in soup.findAll('link', attrs={'href':re.compile("^http://")}): 
+                            links.append(link.get('href'))
+                        for link in soup.findAll('link', attrs={'href':re.compile("^https://")}): 
+                            links.append(link.get('href'))
                     except requests.exceptions.RequestException as e:
                         print(e)
             urls = re.findall('http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\(\), ]|(?:%[0-9a-fA-F][0-9a-fA-F]))+',page.text)
