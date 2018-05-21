@@ -43,7 +43,7 @@ def spider(links,target,depth):
             except requests.exceptions.RequestException as e:  # This is the correct syntax
                 if 'https' in target: 
                     try:
-                        start_page = requests.get(target.replace('https','http'),allow_redirects=True,headers=headers)
+                        page = requests.get(target.replace('https','http'),allow_redirects=True,headers=headers)
                     except requests.exceptions.RequestException as e:
                         print(e)
             urls = re.findall('http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\(\), ]|(?:%[0-9a-fA-F][0-9a-fA-F]))+',page.text)
