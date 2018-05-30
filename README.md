@@ -1,3 +1,5 @@
+[logo]: https://github.com/jordanpotti/CloudScraper/blob/master/media/CloudScraperReadme.png
+
 #### CloudScraper is a Tool to spider and scrape targets in search of cloud resources. Plug in a URL and it will spider and search the source of spidered pages for strings such as 's3.amazonaws.com', 'windows.net' and 'digitaloceanspaces'. AWS, Azure, Digital Ocean resources are currently supported. 
 
 #### [@ok_bye_now](https://twitter.com/ok_bye_now)
