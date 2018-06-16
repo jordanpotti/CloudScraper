@@ -1,7 +1,6 @@
 from requests_html import HTMLSession
 from argparse import ArgumentParser
 from rfc3987 import parse
-import requests
 import time
 import sys
 

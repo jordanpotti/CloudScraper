@@ -8,9 +8,8 @@
 ## Pre-Requisites
 Non-Standard Python Libraries:
 
-* requests
-* argparse
-* beautifulsoup
+* requests_html
+* rfc3987
 
 Created with Python 3.6
 
@@ -28,6 +27,7 @@ This tool was inspired by a recent talk by [Bryce Kunz](https://twitter.com/Twee
       -u URL         Target Scope
       -d DEPTH       Max Depth of links Default: 25
       -l TARGETLIST  Location of text file of Line Delimited targets
+      -v Verbose     Verbose output
 
     example: python3 CloudScraper.py -u https://rottentomatoes.com
     
