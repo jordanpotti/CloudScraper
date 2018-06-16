@@ -1,2 +1,3 @@
-requests==2.18.4
-BeautifulSoup4
+requests_html
+rfc3987
+termcolor

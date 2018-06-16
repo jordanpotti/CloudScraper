@@ -20,7 +20,7 @@ This tool was inspired by a recent talk by [Bryce Kunz](https://twitter.com/Twee
 ## Usage:
 
 
-    usage: CloudScraper.py [-h] [-u URL] [-d DEPTH] [-l TARGETLIST]
+    usage: CloudScraper.py [-h] [-v] [-u URL] [-d DEPTH] [-l TARGETLIST]
 
     optional arguments:
       -h, --help     show this help message and exit
