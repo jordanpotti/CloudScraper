@@ -48,8 +48,15 @@ def worker(target_, depth, url, s):
                 
             return links
 
-    except ValueError or TypeError:
-        #error thrown by the url parser if the given url is invalid
+    #errors thrown by the url parser if the given url is invalid
+    except ValueError:
+        if arguments.v:
+            print('Error: ', url)
+        pass
+    
+    except TypeError:
+        if arguments.v:
+            print('Error: ', url)
         pass
         
 
@@ -83,14 +90,13 @@ def parser(links):
         Once all the links have been gathered check how many of them
         match with the list of cloud domains we are interested in.
     '''
-    print('Total links: ', len(links))
-    
-    matches = []
     cloud_domains = ['amazonaws.com', 'digitaloceanspaces.com', 'windows.net']
+    matches = []
 
     [[matches.append(link) for link in links if cloud_domain in link] for cloud_domain in cloud_domains]
     matches = list(set(matches))
     
+    print('\nTotal links: ', len(links))
     if len(matches) == 0:
         print(colored("There were no matches!", 'red'))
     

@@ -10,6 +10,7 @@ Non-Standard Python Libraries:
 
 * requests_html
 * rfc3987
+* termcolor
 
 Created with Python 3.6
 
