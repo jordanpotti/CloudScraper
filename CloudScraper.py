@@ -51,12 +51,12 @@ def worker(target_, depth, url, s):
     #errors thrown by the url parser if the given url is invalid
     except ValueError:
         if arguments.v:
-            print('Error: ', url)
+            print(colored('Error: {}'.format(url), 'red'))
         pass
     
     except TypeError:
         if arguments.v:
-            print('Error: ', url)
+            print(colored('Error: {}'.format(url), 'red'))
         pass
         
 
