@@ -2,9 +2,10 @@ from argparse import ArgumentParser
 from multiprocessing import Pool
 from termcolor import colored
 from rfc3987 import parse
-import requests_html
 import itertools
+import requests
 import sys
+import re
 
 
 def print_banner():
@@ -14,6 +15,28 @@ def print_banner():
         )
 
 
+def checker(url):
+    '''
+    Check if the url is a valid one or not.
+    '''
+    try:
+        parse(url)
+        return True
+    except ValueError:
+        return False
+    return False
+
+def gather_links(html):
+    '''
+    Apply to the raw HTML a regular expression to gather all the urls.
+    '''
+    urls = []
+    links_ = re.findall('http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\(\), ]|(?:%[0-9a-fA-F][0-9a-fA-F]))+', html)
+    urls.extend(filter(checker, links_)) #filter the ones that don't compile with the checker function
+
+    del(links_)
+    return list(set(urls))
+
 def start(target):
     '''
         Load the initial url and gather the first urls that will be used
@@ -22,18 +45,16 @@ def start(target):
     print(colored("Beginning search for cloud resources in {}".format(target), color='cyan'))
 
     try:
-        html = requests_html.requests.get(target, allow_redirects=True, headers=headers).text
-        html = requests_html.HTML(html=html)
-        links = list(set(html.absolute_links))
+        html = requests.get(target, allow_redirects=True, headers=headers).text
+        links = gather_links(html)
 
-    except requests_html.requests.exceptions.RequestException as e:
+    except requests.exceptions.RequestException as e:
         if arguments.v:
             print(colored('Network error: {}'.format(e), 'red', attrs=['bold']))
         return
 
     print(colored('Initial links: {}\n'.format(len(links)), color='cyan'))
     spider(links, target)
-
 
 def worker(url):
     '''
@@ -42,33 +63,20 @@ def worker(url):
         the url matches the target to avoid crawling other web sites.
         Makes a GET request, parses the HTML and returns all the links.
     '''
-    try:
-        if (target_['authority'] in parse(url)['authority']) and (url.count("/") < arguments.depth+2):
-            try:
-                html = requests_html.requests.get(url, allow_redirects=True, headers=headers).text
-                html = requests_html.HTML(html=html)
-                links = list(set(html.absolute_links))
+    if url.count("/") <= arguments.depth+2:
+        try:
+            html = requests.get(url, allow_redirects=True, headers=headers).text
+            links = gather_links(html)
 
-            except requests_html.requests.exceptions.RequestException as e:
-                if arguments.v:
-                    print(colored('Network error: {}'.format(e), 'red', attrs=['bold']))
-                return []
-
-            print('{} links found [{}]'.format(len(links), url))
-            return links
-
-        else:
+        except requests.exceptions.RequestException as e:
+            if arguments.v:
+                print(colored('Network error: {}'.format(e), 'red', attrs=['bold']))
             return []
 
-    #errors thrown by the url parser if the given url is invalid
-    except ValueError:
-        if arguments.v:
-            print(colored('Error: {}'.format(url), 'red', attrs=['bold']))
-        return []
-    
-    except TypeError:
-        if arguments.v:
-            print(colored('Error: {}'.format(url), 'red', attrs=['bold']))
+        print('{} links found [{}]'.format(len(links), url))
+        return links
+
+    else:
         return []
         
 
@@ -84,7 +92,7 @@ def spider(base_urls, target):
     global target_
     target_ = parse(target)
     p = Pool(arguments.process)
-    wannabe = base_urls 
+    wannabe = [url for url in base_urls if target_['authority'] in parse(url)['authority']]
 
     while True:
         #retrieve all the urls returned by the workers
@@ -102,11 +110,13 @@ def spider(base_urls, target):
             for url in new_urls:
                 if url not in base_urls:
                     '''
-                    For each new url, check if it hasn't been crawled. If it's indeed new,
-                    it gets appended to the wannabe list so in the next iteration it will be crawled. 
+                    For each new url, check if it hasn't been crawled. If it's 
+                    indeed new and contains the target domain it gets appended to 
+                    the wannabe list so in the next iteration it will be crawled. 
                     '''
                     i += 1
-                    wannabe.append(url)
+                    if target_['authority'] in parse(url)['authority']:
+                        wannabe.append(url)
                     base_urls.append(url)
         
         print(colored('\nNew urls appended: {}\n'.format(i), 'green', attrs=['bold']))
@@ -139,7 +149,7 @@ def parser(links):
 def args():
     parser = ArgumentParser()
     parser.add_argument("-u", dest="URL", required=False, help="Target Scope") 
-    parser.add_argument("-d", dest="depth", type=int, required=False, default=25, help="Max Depth of links Default: 25")
+    parser.add_argument("-d", dest="depth", type=int, required=False, default=5, help="Max Depth of links Default: 5")
     parser.add_argument("-l", dest="targetlist", required=False, help="Location of text file of Line Delimited targets") 
     parser.add_argument("-v", action="store_true", default=False, required=False, help="Verbose output")
     #parser.add_argument("-t", dest="time", required=False, default=0, help="Time between GETs to avoid getting blocked")

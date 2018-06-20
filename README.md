@@ -8,7 +8,7 @@
 ## Pre-Requisites
 Non-Standard Python Libraries:
 
-* requests_html
+* requests
 * rfc3987
 * termcolor
 
@@ -26,7 +26,7 @@ This tool was inspired by a recent talk by [Bryce Kunz](https://twitter.com/Twee
     optional arguments:
       -h, --help     show this help message and exit
       -u URL         Target Scope
-      -d DEPTH       Max Depth of links Default: 25
+      -d DEPTH       Max Depth of links Default: 5
       -l TARGETLIST  Location of text file of Line Delimited targets
       -v Verbose     Verbose output
       -p Processes  Number of processes to be executed in parallel. Default: 2
