@@ -8,51 +8,55 @@ import sys
 
 
 def print_banner():
-        print('''\n
-        CloudScraper is a tool to search through the source code of websites in order to find cloud resources belonging to a target.
+        print('''\nCloudScraper is a tool to search through the source code of websites in order to find cloud resources belonging to a target.
         by Jordan Potti
-        @ok_bye_now
-        (forked by Turr0n)
-        \n'''
-        )   
+        @ok_bye_now\n'''
+        )
 
 
-def start(target, depth):
+def start(target):
     '''
         Load the initial url and gather the first urls that will be used
         by the spider to keep looking for more links
     '''
-
     print(colored("Beginning search for cloud resources in {}".format(target), color='cyan'))
-    html = requests_html.requests.get(target, allow_redirects=True, headers=headers).text
-    html = requests_html.HTML(html=html)
 
-    links = list(set(html.absolute_links))
+    try:
+        html = requests_html.requests.get(target, allow_redirects=True, headers=headers).text
+        html = requests_html.HTML(html=html)
+        links = list(set(html.absolute_links))
+
+    except requests_html.requests.exceptions.RequestException as e:
+        if arguments.v:
+            print(colored('Network error: {}'.format(e), 'red', attrs=['bold']))
+        return
+
     print(colored('Initial links: {}\n'.format(len(links)), color='cyan'))
-
     spider(links, target)
 
 
 def worker(url):
     '''
-        Function handling all the crawling action of the spider. 
-        It first checks the desired depth and if the domain of 
-        the url matches the target to avoid crawling other web sites. 
-        Makes a GET request, parses the HTML and returns all the links. 
+        Function handling all the crawling action of the spider.
+        It first checks the desired depth and if the domain of
+        the url matches the target to avoid crawling other web sites.
+        Makes a GET request, parses the HTML and returns all the links.
     '''
     try:
-        if (target_['authority'] in parse(url)['authority']) and url.count("/") < arguments.depth+2:
-            html = requests_html.requests.get(url, allow_redirects=True, headers=headers).text
-            html = requests_html.HTML(html=html)
+        if (target_['authority'] in parse(url)['authority']) and (url.count("/") < arguments.depth+2):
+            try:
+                html = requests_html.requests.get(url, allow_redirects=True, headers=headers).text
+                html = requests_html.HTML(html=html)
+                links = list(set(html.absolute_links))
 
-            links = list(html.absolute_links)
+            except requests_html.requests.exceptions.RequestException as e:
+                if arguments.v:
+                    print(colored('Network error: {}'.format(e), 'red', attrs=['bold']))
+                return []
 
-            #if verbose output is activated, print a bit more information
-            if arguments.v:
-                print('{} links found [{}]'.format(len(links), url))
-            
-            return links if type(links) == list else []
-        
+            print('{} links found [{}]'.format(len(links), url))
+            return links
+
         else:
             return []
 
@@ -78,17 +82,20 @@ def spider(base_urls, target):
         base_urls is a list with all the already crawled urls.
     '''
     global target_
-    target_ = parse(target) #more appropiate way to get the domain for later use in the worker function
+    target_ = parse(target)
     p = Pool(arguments.process)
     wannabe = base_urls 
 
     while True:
-        new_urls = p.map(worker, wannabe)#retrieve all the urls returned by the workers
-        new_urls = list(set(itertools.chain(*new_urls)))#flatten them and remove repeated ones
+        #retrieve all the urls returned by the workers
+        new_urls = p.map(worker, wannabe)
+        #flatten them and remove repeated ones
+        new_urls = list(set(itertools.chain(*new_urls)))
         wannabe = []
         i = 0
 
-        if new_urls == []: #if new_urls is empty meaning no more urls are being discovered, exit the loop
+        #if new_urls is empty meaning no more urls are being discovered, exit the loop
+        if new_urls == []:
             break
         
         else:
@@ -103,7 +110,6 @@ def spider(base_urls, target):
                     base_urls.append(url)
         
         print(colored('\nNew urls appended: {}\n'.format(i), 'green', attrs=['bold']))
-
 
     #once all the links for the given depth have been analyzed, execute the parser
     parser(base_urls)
@@ -126,7 +132,7 @@ def parser(links):
         print(colored("There were no matches!", 'red', attrs=['bold']))
     
     else:
-        print(colored("\nThere were {} matches for this search!".format(len(matches)), 'green', attrs=['bold']))
+        print(colored("There were {} matches for this search!".format(len(matches)), 'green', attrs=['bold']))
         [print(match, "\n") for match in matches]
 
 
@@ -157,14 +163,12 @@ def cleaner(url):
 def main():
     if arguments.targetlist:
         with open (arguments.targetlist, 'r') as target_list:
-            [start(cleaner(line), arguments.depth) for line in target_list]
+            [start(cleaner(line)) for line in target_list]
     else:
-        start(cleaner(arguments.URL), arguments.depth)
+        start(cleaner(arguments.URL))
 
 
-headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/65.0.3325.181 Safari/537.36'
-          }
-global arguments
+headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/65.0.3325.181 Safari/537.36'}
 arguments = args()
 
 if __name__ == '__main__':

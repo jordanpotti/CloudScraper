@@ -21,7 +21,7 @@ This tool was inspired by a recent talk by [Bryce Kunz](https://twitter.com/Twee
 ## Usage:
 
 
-    usage: CloudScraper.py [-h] [-v] [-u URL] [-d DEPTH] [-l TARGETLIST]
+    usage: CloudScraper.py [-h] [-v] [-p Processes] [-d DEPTH] [-u URL] [-l TARGETLIST]
 
     optional arguments:
       -h, --help     show this help message and exit
@@ -29,13 +29,12 @@ This tool was inspired by a recent talk by [Bryce Kunz](https://twitter.com/Twee
       -d DEPTH       Max Depth of links Default: 25
       -l TARGETLIST  Location of text file of Line Delimited targets
       -v Verbose     Verbose output
-      -p Processess  Number of processes to be executed in parallel. Default: 2
+      -p Processes  Number of processes to be executed in parallel. Default: 2
 
     example: python3 CloudScraper.py -u https://rottentomatoes.com
     
 ## ToDo
 
-- [ ] Multithread Functionality
 - [ ] Add key word customization
 
 ## Various:
