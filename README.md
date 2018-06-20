@@ -29,6 +29,7 @@ This tool was inspired by a recent talk by [Bryce Kunz](https://twitter.com/Twee
       -d DEPTH       Max Depth of links Default: 25
       -l TARGETLIST  Location of text file of Line Delimited targets
       -v Verbose     Verbose output
+      -p Processess  Number of processes to be executed in parallel. Default: 2
 
     example: python3 CloudScraper.py -u https://rottentomatoes.com
     
