@@ -30,13 +30,9 @@ def start(target, depth):
                 print(e)
     links = []
     soup = BeautifulSoup(start_page.text, "lxml")
-    for link in soup.findAll('a', attrs={'href':re.compile("^http://")}):
+    for link in soup.findAll('a', attrs={'href':re.compile("^https?://")}):
         links.append(link.get('href'))
-    for link in soup.findAll('a', attrs={'href':re.compile("^https://")}): 
-        links.append(link.get('href'))
-    for link in soup.findAll('link', attrs={'href':re.compile("^http://")}): 
-        links.append(link.get('href'))
-    for link in soup.findAll('link', attrs={'href':re.compile("^https://")}): 
+    for link in soup.findAll('link', attrs={'href':re.compile("^https?://")}):
         links.append(link.get('href'))
 
     urls = re.findall('http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\(\), ]|(?:%[0-9a-fA-F][0-9a-fA-F]))+',start_page.text)
@@ -114,13 +110,13 @@ def main():
     if arguments.targetlist:
         with open (arguments.targetlist, 'r') as target_list:
             for line in target_list:
-                if 'http' not in line:
+                if line.startswith('http'):
                     line_mod = "https://"+line
                     start(line_mod.rstrip(), arguments.depth)
                 else:
                     start(line, arguments.depth)
     else:                
-        if 'http' not in arguments.URL:
+        if not arguments.URL.startswith('http'):
             line_mod = "https://"+arguments.URL
             start(line_mod.rstrip(), arguments.depth)
         else:
