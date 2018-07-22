@@ -3,11 +3,12 @@ import re
 from argparse import ArgumentParser
 import sys
 import rfc3987
+import threading
+import queue
 
-grep_list = None
-
-arguments = None
 links_done = set()
+q = queue.Queue()
+
 
 def print_banner():
     print('''\nDescription: 
@@ -37,49 +38,43 @@ def get_links_from_html(html):
     return set(links)
 
 
-def start(target, depth):
-    global links_done
-    print("Beginning search for cloud resources in ", target, "\n")
-    try:
-        start_page = requests.get(target, allow_redirects=True, headers=headers)
-    except requests.exceptions.RequestException as e:
-        if 'https' in target:
-            try:
-                start_page = requests.get(target.replace('https', 'http'), allow_redirects=True, headers=headers)
-            except requests.exceptions.RequestException as e:
-                print(e)
-
-    links = get_links_from_html(start_page.text)
-    links_done = links_done.union(links)
-    parser(links)
-    spider(links, target, depth)
-
-
-def spider(links, target, depth):
+def make_request_and_queue(link, target, depth):
     global links_done
     target_clean = re.sub('^https?://', "", target)
-    for link in links:
-        if target_clean in link and link.count("/") < depth + 2:
-            page = requests.get(link, allow_redirects=True, headers=headers).text
-            more_links = get_links_from_html(page)
-            more_links.difference_update(links_done)
-            links_done=links_done.union(more_links)
-            if len(more_links) > 0:
-                parser(links)
-                spider(more_links, target, depth)
+    if target_clean in link and link.count("/") < depth + 2:
+        page = requests.get(link, allow_redirects=True, headers=headers).text
+        # Update the history of links requested
+        links_done.add(link)
+        links_to_spider = get_links_from_html(page)
+        # We make sure to remove duplicates so we don't make requests twice to the same endpoint
+        links_to_spider.difference_update(links_done)
+
+        for url in links_to_spider:
+            q.put({'target': target_clean, 'link': url})
+        if len(links_to_spider) > 0:
+            check_cloud_in_links(links_to_spider)
 
 
-def parser(links):
+def check_cloud_in_links(links):
     matches = []
     cloud_matches = ['amazonaws.com', 'digitaloceanspaces.com', 'windows.net']
-    for strings in cloud_matches:
+    for cloud in cloud_matches:
         for link in links:
-            if strings in link:
+            if cloud in link:
                 matches.append(link)
     matches = list(set(matches))
     if len(matches) > 0:
         for match in matches:
             print(match, "\n")
+
+
+def worker(depth):
+    while True:
+        item = q.get()
+        if item is None:
+            break
+        make_request_and_queue(item['link'], item['target'], depth)
+        q.task_done()
 
 
 def main():
@@ -91,6 +86,7 @@ def main():
     group.add_argument("-l", dest="targetlist", help="Location of text file of Line Delimited targets")
 
     parser.add_argument("-d", dest="depth", type=int, required=False, default=25, help="Max Depth of links Default: 25")
+    parser.add_argument("-t", dest="threads", type=int, required=False, default=2, help="Number of threads: 2")
 
     if len(sys.argv) == 1:
         parser.error("No arguments given.")
@@ -98,20 +94,37 @@ def main():
     # ouput parsed arguments into a usable object
     arguments = parser.parse_args()
 
+    targets = []
     if arguments.targetlist:
         with open(arguments.targetlist, 'r') as target_list:
-            for line in target_list:
-                if line.startswith('http'):
-                    line_mod = "https://" + line
-                    start(line_mod.rstrip(), arguments.depth)
-                else:
-                    start(line, arguments.depth)
+            for target in target_list:
+                if target.startswith('http'):
+                    target = "https://" + target.strip()
+                targets.append(target)
     else:
+        target = arguments.URL.strip()
         if not arguments.URL.startswith('http'):
-            line_mod = "https://" + arguments.URL
-            start(line_mod.rstrip(), arguments.depth)
-        else:
-            start(arguments.URL, arguments.depth)
+            target = "https://" + target
+        targets.append(target)
+
+    number_of_threads = arguments.threads
+    depth = arguments.depth
+
+    # spawn the threads
+    for i in range(0, number_of_threads):
+        t = threading.Thread(target=worker, args=(depth,))
+        t.start()
+
+    # queue the targets
+    for target in targets:
+        q.put({'target': target, 'link': target})
+
+    # Wait for all jobs get done
+    q.join()
+
+    for i in range(0, arguments.threads):
+        # put a NoneType so the blocking thread get free and exit
+        q.put(None)
 
 
 print_banner()
