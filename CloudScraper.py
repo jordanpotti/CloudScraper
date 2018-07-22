@@ -30,9 +30,15 @@ def start(target, depth):
                 print(e)
     links = []
     soup = BeautifulSoup(start_page.text, "lxml")
+    # We take the urls from a, link, img, and scripts HTML tags
+    # the complete list: https://stackoverflow.com/questions/2725156/complete-list-of-html-tag-attributes-which-have-a-url-value
     for link in soup.findAll('a', attrs={'href':re.compile("^https?://")}):
         links.append(link.get('href'))
     for link in soup.findAll('link', attrs={'href':re.compile("^https?://")}):
+        links.append(link.get('href'))
+    for link in soup.findAll('img', attrs={'src':re.compile("^https?://")}):
+        links.append(link.get('href'))
+    for link in soup.findAll('script', attrs={'src':re.compile("^https?://")}):
         links.append(link.get('href'))
 
     urls = re.findall('http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\(\), ]|(?:%[0-9a-fA-F][0-9a-fA-F]))+',start_page.text)
@@ -47,26 +53,26 @@ def spider(links,target,depth):
             try:
                 page = requests.get(url, allow_redirects=True, headers=headers)
                 soup = BeautifulSoup(page.text, "lxml")
-                for link in soup.findAll('a', attrs={'href':re.compile("^http://")}):
+                for link in soup.findAll('a', attrs={'href': re.compile("^https?://")}):
                     links.append(link.get('href'))
-                for link in soup.findAll('a', attrs={'href':re.compile("^https://")}): 
+                for link in soup.findAll('link', attrs={'href': re.compile("^https?://")}):
                     links.append(link.get('href'))
-                for link in soup.findAll('link', attrs={'href':re.compile("^http://")}): 
+                for link in soup.findAll('img', attrs={'src': re.compile("^https?://")}):
                     links.append(link.get('href'))
-                for link in soup.findAll('link', attrs={'href':re.compile("^https://")}): 
+                for link in soup.findAll('script', attrs={'src': re.compile("^https?://")}):
                     links.append(link.get('href'))
             except requests.exceptions.RequestException as e:  # This is the correct syntax
-                if 'https' in target: 
+                if target.startswith('https://'):
                     try:
-                        page = requests.get(target.replace('https','http'),allow_redirects=True,headers=headers)
+                        page = requests.get(target.replace('https://','http://'),allow_redirects=True,headers=headers)
                         soup = BeautifulSoup(page.text, "lxml")
-                        for link in soup.findAll('a', attrs={'href':re.compile("^http://")}):
+                        for link in soup.findAll('a', attrs={'href': re.compile("^https?://")}):
                             links.append(link.get('href'))
-                        for link in soup.findAll('a', attrs={'href':re.compile("^https://")}): 
+                        for link in soup.findAll('link', attrs={'href': re.compile("^https?://")}):
                             links.append(link.get('href'))
-                        for link in soup.findAll('link', attrs={'href':re.compile("^http://")}): 
+                        for link in soup.findAll('img', attrs={'src': re.compile("^https?://")}):
                             links.append(link.get('href'))
-                        for link in soup.findAll('link', attrs={'href':re.compile("^https://")}): 
+                        for link in soup.findAll('script', attrs={'src': re.compile("^https?://")}):
                             links.append(link.get('href'))
                     except requests.exceptions.RequestException as e:
                         print(e)
