@@ -38,11 +38,13 @@ def get_links_from_html(html):
     return set(links)
 
 
-def make_request_and_queue(link, target, depth):
+def make_request_and_queue(link, target, depth, verbose):
     global links_done
     target_clean = re.sub('^https?://', "", target)
     if target_clean in link and link.count("/") < depth + 2:
         page = requests.get(link, allow_redirects=True, headers=headers).text
+        if verbose:
+            print("GETting %s" %link)
         # Update the history of links requested
         links_done.add(link)
         links_to_spider = get_links_from_html(page)
@@ -68,12 +70,12 @@ def check_cloud_in_links(links):
             print(match, "\n")
 
 
-def worker(depth):
+def worker(depth, verbose):
     while True:
         item = q.get()
         if item is None:
             break
-        make_request_and_queue(item['link'], item['target'], depth)
+        make_request_and_queue(item['link'], item['target'], depth, verbose)
         q.task_done()
 
 
@@ -87,6 +89,7 @@ def main():
 
     parser.add_argument("-d", dest="depth", type=int, required=False, default=25, help="Max Depth of links Default: 25")
     parser.add_argument("-t", dest="threads", type=int, required=False, default=2, help="Number of threads: 2")
+    parser.add_argument("-v", dest="verbose", required=False, action='store_true', help="Verbose")
 
     if len(sys.argv) == 1:
         parser.error("No arguments given.")
@@ -109,10 +112,11 @@ def main():
 
     number_of_threads = arguments.threads
     depth = arguments.depth
+    verbose = arguments.verbose
 
     # spawn the threads
     for i in range(0, number_of_threads):
-        t = threading.Thread(target=worker, args=(depth,))
+        t = threading.Thread(target=worker, args=(depth,verbose))
         t.start()
 
     # queue the targets
