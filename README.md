@@ -21,19 +21,20 @@ This tool was inspired by a recent talk by [Bryce Kunz](https://twitter.com/Twee
 ## Usage:
 
 
-    usage: CloudScraper.py [-h] [-u URL] [-d DEPTH] [-l TARGETLIST]
+    usage: CloudScraper.py [-h] [-u URL | -l TARGETLIST] [-d DEPTH] [-l TARGETLIST]
 
     optional arguments:
       -h, --help     show this help message and exit
       -u URL         Target Scope
       -d DEPTH       Max Depth of links Default: 25
       -l TARGETLIST  Location of text file of Line Delimited targets
+      -t THREADS     Number of threads to be used, Default: 2
+      -v VERBOSE     Enable Verbosity
 
     example: python3 CloudScraper.py -u https://rottentomatoes.com
     
 ## ToDo
 
-- [ ] Multithread Functionality
 - [ ] Add key word customization
 
 ## Various:
