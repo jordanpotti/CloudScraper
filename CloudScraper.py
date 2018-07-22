@@ -85,14 +85,15 @@ def parser(links):
 def main():
     global arguments
     parser = ArgumentParser()
-    parser.add_argument("-u", dest="URL", required=False, help="Target Scope")
+
+    group = parser.add_mutually_exclusive_group(required=True)
+    group.add_argument("-u", dest="URL", help="Target Scope")
+    group.add_argument("-l", dest="targetlist", help="Location of text file of Line Delimited targets")
+
     parser.add_argument("-d", dest="depth", type=int, required=False, default=25, help="Max Depth of links Default: 25")
-    parser.add_argument("-l", dest="targetlist", required=False, help="Location of text file of Line Delimited targets")
 
     if len(sys.argv) == 1:
         parser.error("No arguments given.")
-        parser.print_usage
-        sys.exit()
 
     # ouput parsed arguments into a usable object
     arguments = parser.parse_args()
