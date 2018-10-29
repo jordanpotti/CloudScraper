@@ -31,7 +31,7 @@ usage: CloudScraper.py [-h] [-u URL] [-d DEPTH] [-l TARGETLIST]
 ```
 
 Example:  
-```bash
+```shell
 $ python3 CloudScraper.py -u https://rottentomatoes.com
 ```
 
@@ -49,7 +49,7 @@ To add keywords, simply add to the list in the parser function.
 
 To use CloudScraper as a container, simply pull the repository and build the image like so:  
 
-```bash
+```shell
 $ git clone https://github.com/jordanpotti/CloudScraper.git   
 $ docker build -t cloudscraper CloudScraper/
 $ docker run -it cloudscraper -u example.com
