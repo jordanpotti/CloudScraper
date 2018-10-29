@@ -20,17 +20,22 @@ This tool was inspired by a recent talk by [Bryce Kunz](https://twitter.com/Twee
 
 ## Usage:
 
-
-    usage: CloudScraper.py [-h] [-u URL] [-d DEPTH] [-l TARGETLIST]
+```bash
+usage: CloudScraper.py [-h] [-u URL] [-d DEPTH] [-l TARGETLIST]
 
     optional arguments:
       -h, --help     show this help message and exit
       -u URL         Target Scope
       -d DEPTH       Max Depth of links Default: 25
       -l TARGETLIST  Location of text file of Line Delimited targets
+```
 
-    example: python3 CloudScraper.py -u https://rottentomatoes.com
-    
+Example:  
+```bash
+$ python3 CloudScraper.py -u https://rottentomatoes.com
+```
+
+
 ## ToDo
 
 - [ ] Multithread Functionality
@@ -39,6 +44,16 @@ This tool was inspired by a recent talk by [Bryce Kunz](https://twitter.com/Twee
 ## Various:
 
 To add keywords, simply add to the list in the parser function. 
+
+## Docker
+
+To use CloudScraper as a container, simply pull the repository and build the image like so:  
+
+```bash
+$ git clone https://github.com/jordanpotti/CloudScraper.git   
+$ docker build -t cloudscraper CloudScraper/
+$ docker run -it cloudscraper -u example.com
+```
 
 ## Contribute
 
