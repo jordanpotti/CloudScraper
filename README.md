@@ -9,8 +9,8 @@
 Non-Standard Python Libraries:
 
 * requests
-* argparse
-* beautifulsoup
+* rfc3987
+* termcolor
 
 Created with Python 3.6
 
@@ -21,19 +21,20 @@ This tool was inspired by a recent talk by [Bryce Kunz](https://twitter.com/Twee
 ## Usage:
 
 
-    usage: CloudScraper.py [-h] [-u URL] [-d DEPTH] [-l TARGETLIST]
+    usage: CloudScraper.py [-h] [-v] [-p Processes] [-d DEPTH] [-u URL] [-l TARGETLIST]
 
     optional arguments:
       -h, --help     show this help message and exit
       -u URL         Target Scope
-      -d DEPTH       Max Depth of links Default: 25
+      -d DEPTH       Max Depth of links Default: 5
       -l TARGETLIST  Location of text file of Line Delimited targets
+      -v Verbose     Verbose output
+      -p Processes  Number of processes to be executed in parallel. Default: 2
 
     example: python3 CloudScraper.py -u https://rottentomatoes.com
     
 ## ToDo
 
-- [ ] Multithread Functionality
 - [ ] Add key word customization
 
 ## Various:
