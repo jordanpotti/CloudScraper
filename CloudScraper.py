@@ -131,7 +131,7 @@ def parser(links):
         match with the list of cloud domains we are interested in.
     '''
     print(colored('Parsing results...', 'cyan', attrs=['bold']))
-    cloud_domains = ['amazonaws.com', 'digitaloceanspaces.com', 'windows.net']
+    cloud_domains = ['amazonaws.com', 'digitaloceanspaces.com', 'windows.net', 'storage.googleapis.com', 'aliyuncs.com']
     matches = []
 
     [[matches.append(link) for link in links if cloud_domain in link] for cloud_domain in cloud_domains]
