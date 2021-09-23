@@ -45,7 +45,7 @@ def start(target):
     print(colored("Beginning search for cloud resources in {}".format(target), color='cyan'))
 
     try:
-        html = requests.get(target, allow_redirects=True, headers=headers).text
+        html = requests.get(target, allow_redirects=True, headers=headers, verify=False).text
         links = gather_links(html)
 
     except requests.exceptions.RequestException as e:
@@ -65,7 +65,7 @@ def worker(url):
     '''
     if url.count("/") <= arguments.depth+2:
         try:
-            html = requests.get(url, allow_redirects=True, headers=headers).text
+            html = requests.get(url, allow_redirects=True, headers=headers, verify=False).text
             links = gather_links(html)
 
         except requests.exceptions.RequestException as e:
@@ -121,6 +121,9 @@ def spider(base_urls, target):
         
         print(colored('\nNew urls appended: {}\n'.format(i), 'green', attrs=['bold']))
 
+    p.close()
+    p.join()
+
     #once all the links for the given depth have been analyzed, execute the parser
     parser(base_urls)
 
@@ -165,9 +168,9 @@ def args():
 
 def cleaner(url):
     if 'http' not in url:
-        return ("https://"+url).rstrip()
+        return ("https://"+url).strip()
     else:
-        return url
+        return url.strip()
 
 
 def main():
@@ -178,7 +181,9 @@ def main():
         start(cleaner(arguments.URL))
 
 
-headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/65.0.3325.181 Safari/537.36'}
+headers = {
+    'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/93.0.4577.82 Safari/537.36'
+}
 arguments = args()
 
 if __name__ == '__main__':

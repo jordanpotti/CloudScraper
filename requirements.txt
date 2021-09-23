@@ -1,4 +1,4 @@
 rfc3987
 termcolor
-requests==2.20.0
+requests
 BeautifulSoup4
