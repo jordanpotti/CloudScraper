@@ -2,3 +2,4 @@ rfc3987
 termcolor
 requests
 BeautifulSoup4
+urllib3

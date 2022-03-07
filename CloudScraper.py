@@ -4,6 +4,7 @@ from termcolor import colored
 from rfc3987 import parse
 import itertools
 import requests
+import urllib3
 import sys
 import re
 
@@ -45,7 +46,7 @@ def start(target):
     print(colored("Beginning search for cloud resources in {}".format(target), color='cyan'))
 
     try:
-        html = requests.get(target, allow_redirects=True, headers=headers, verify=False).text
+        html = requests.get(target, allow_redirects=True, headers=headers, verify=arguments.no_verify).text
         links = gather_links(html)
 
     except requests.exceptions.RequestException as e:
@@ -65,7 +66,7 @@ def worker(url):
     '''
     if url.count("/") <= arguments.depth+2:
         try:
-            html = requests.get(url, allow_redirects=True, headers=headers, verify=False).text
+            html = requests.get(url, allow_redirects=True, headers=headers, verify=arguments.no_verify).text
             links = gather_links(html)
 
         except requests.exceptions.RequestException as e:
@@ -155,8 +156,8 @@ def args():
     parser.add_argument("-d", dest="depth", type=int, required=False, default=5, help="Max Depth of links Default: 5")
     parser.add_argument("-l", dest="targetlist", required=False, help="Location of text file of Line Delimited targets") 
     parser.add_argument("-v", action="store_true", default=False, required=False, help="Verbose output")
-    #parser.add_argument("-t", dest="time", required=False, default=0, help="Time between GETs to avoid getting blocked")
     parser.add_argument("-p", dest="process", required=False, default=2, type=int, help="Number of processes to run")
+    parser.add_argument("--no-verify", action="store_false", default=True, required=False, help="Skip TLS verification")
     if len(sys.argv) == 1:
         parser.error("No arguments given.")
         parser.print_usage
@@ -174,6 +175,7 @@ def cleaner(url):
 
 
 def main():
+
     if arguments.targetlist:
         with open (arguments.targetlist, 'r') as target_list:
             [start(cleaner(line)) for line in target_list]
@@ -185,6 +187,10 @@ headers = {
     'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/93.0.4577.82 Safari/537.36'
 }
 arguments = args()
+
+# If we passed --no-verify then we likely don't care about insecure request warnings.
+if arguments.no_verify:
+    urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 if __name__ == '__main__':
     print_banner()
